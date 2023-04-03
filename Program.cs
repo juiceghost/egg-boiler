@@ -8,23 +8,56 @@ namespace async_test
             Console.WriteLine("Egg boiler 1.0 Press return key to begin");
             Console.ReadKey();
 
+            // TODO: Koka fler ägg
+            // TODO: Slumpmässigt ta upp ägg ur kastrullen
+
             // Skapa ett nytt äggobjekt, dvs instansiera Egg-klassen
 
-            Egg myEgg = new Egg
+            Egg firstEgg = new Egg
             {
                 id = 1,
-                name = "Påskägget",
+                name = "Easteregg",
                 egg_temperature = 20.0M,
                 egg_time = 0,
                 done_temperature = 70
             };
-            PrintEgg(myEgg); // start of sim
+            Egg secondEgg = new Egg
+            {
+                id = 2,
+                name = "Bioegg",
+                egg_temperature = 20.0M,
+                egg_time = 0,
+                done_temperature = 60
+            };
 
-            int simulationTime = 0; // Amount of seconds simulation has been running
+            var firstEggTask = BoilEgg(firstEgg);
+            var secondEggTask = BoilEgg(secondEgg);
 
-            myEgg = await BoilEgg(myEgg);
+            var eggTasks = new List<Task> { firstEggTask, secondEggTask };
 
-            PrintEgg(myEgg); // end of sim
+            while (eggTasks.Count > 0)
+            {
+                Task finishedTask = await Task.WhenAny(eggTasks);
+                if (finishedTask == firstEggTask)
+                {
+                    Console.WriteLine("first egg is ready");
+                    
+                }
+                else if (finishedTask == secondEggTask)
+                {
+                    Console.WriteLine("second egg is ready");
+                }
+
+                await finishedTask;
+                eggTasks.Remove(finishedTask);
+            }
+                //PrintEgg(myEgg); // start of sim
+
+                int simulationTime = 0; // Amount of seconds simulation has been running
+
+            //myEgg = await BoilEgg(myEgg);
+
+            //PrintEgg(myEgg); // end of sim
             Console.WriteLine("Main Method End");
 
             // Huvudsimuleringen har en tråd samt
@@ -73,7 +106,7 @@ Console.Write($".");
 
 public static void PrintEgg (Egg egg)
 {
-Console.WriteLine($"The egg has an inner temperature of {egg.egg_temperature} and has been boiling for {egg.egg_time} seconds");
+Console.WriteLine($"{egg.name} has an inner temperature of {egg.egg_temperature} and has been boiling for {egg.egg_time} seconds");
 }
 
 }
