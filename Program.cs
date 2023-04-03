@@ -3,6 +3,7 @@ namespace async_test
 {
 	public class Program
 	{
+        // Mostly swiped from https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/
         static async Task Main(string[] args)
         {
             Console.WriteLine("Egg boiler 1.0 Press return key to begin");
@@ -29,11 +30,20 @@ namespace async_test
                 egg_time = 0,
                 done_temperature = 60
             };
+            Egg thirdEgg = new Egg
+            {
+                id = 3,
+                name = "Farmegg",
+                egg_temperature = 20.0M,
+                egg_time = 0,
+                done_temperature = 50
+            };
 
             var firstEggTask = BoilEgg(firstEgg);
             var secondEggTask = BoilEgg(secondEgg);
+            var thirdEggTask = BoilEgg(thirdEgg);
 
-            var eggTasks = new List<Task> { firstEggTask, secondEggTask };
+            var eggTasks = new List<Task> { firstEggTask, secondEggTask, thirdEggTask };
 
             while (eggTasks.Count > 0)
             {
@@ -41,13 +51,22 @@ namespace async_test
                 if (finishedTask == firstEggTask)
                 {
                     Console.WriteLine("first egg is ready");
-                    
+                    Egg eggResult = firstEggTask.Result;
+                    PrintEgg(eggResult);
+
                 }
                 else if (finishedTask == secondEggTask)
                 {
                     Console.WriteLine("second egg is ready");
+                    Egg eggResult = secondEggTask.Result;
+                    PrintEgg(eggResult);
                 }
-
+                else if (finishedTask == thirdEggTask)
+                {
+                    Console.WriteLine("third egg is ready");
+                    Egg eggResult = thirdEggTask.Result;
+                    PrintEgg(eggResult);
+                }
                 await finishedTask;
                 eggTasks.Remove(finishedTask);
             }
