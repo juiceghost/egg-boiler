@@ -15,6 +15,13 @@ namespace async_test
 
         // The temperature at which the egg is considered to be done
         public int done_temperature { get; set; }
+
+        public decimal RemainingTime()
+        {
+            // X = (Y - 20) * 1.33
+            // Y = done_temperature
+            return ((done_temperature - 20) * 10) - egg_time;
+        }
     }
 }
 

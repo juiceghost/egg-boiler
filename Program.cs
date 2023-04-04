@@ -42,9 +42,12 @@ namespace async_test
             var firstEggTask = BoilEgg(firstEgg);
             var secondEggTask = BoilEgg(secondEgg);
             var thirdEggTask = BoilEgg(thirdEgg);
+            var statusEggTask = EggStatus(new List<Egg> { firstEgg, secondEgg, thirdEgg });
 
-            var eggTasks = new List<Task> { firstEggTask, secondEggTask, thirdEggTask };
+            var eggTasks = new List<Task> { firstEggTask, secondEggTask, thirdEggTask, statusEggTask };
 
+
+       
             while (eggTasks.Count > 0)
             {
                 Task finishedTask = await Task.WhenAny(eggTasks);
@@ -67,12 +70,17 @@ namespace async_test
                     Egg eggResult = thirdEggTask.Result;
                     PrintEgg(eggResult);
                 }
+                else if (finishedTask == statusEggTask)
+                {
+                    Console.WriteLine("All eggs are done. Simulation over");
+                }
+
                 await finishedTask;
                 eggTasks.Remove(finishedTask);
             }
                 //PrintEgg(myEgg); // start of sim
 
-                int simulationTime = 0; // Amount of seconds simulation has been running
+                int simulationTime = 0; // Amount of  simulation has been running
 
             //myEgg = await BoilEgg(myEgg);
 
@@ -82,7 +90,41 @@ namespace async_test
             // Huvudsimuleringen har en tråd samt
             // Varje Ägg-objekt ska köra i en egen tråd
         }
-        public async static Task<Egg> BoilEgg(Egg egg)
+
+
+        public async static Task EggStatus(List<Egg> eggs)
+        {
+            // Skriv ut status på alla ägg, dvs temperatur och hur länge de kokat
+            while (true)
+            {
+                
+                //Console.ReadKey(true);
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                Console.Clear();
+                eggs.ForEach(egg =>
+                {
+                    
+                    Console.WriteLine($"{egg.RemainingTime()} seconds remaining");
+                    Console.WriteLine($"{egg.name} has been boiling for {egg.egg_time} and has a temperature of {egg.egg_temperature}");
+                });
+                // När alla egg's remaining time är noll, avsluta simuleringen
+
+                var totalRemaining = eggs.Select(egg => egg.RemainingTime()).Sum();
+
+                //var totalRemaining = (from egg in eggs
+                //                     let remaining = egg.RemainingTime()
+                //                     select remaining).Sum();
+                if (totalRemaining == 0)
+                {
+                    return;
+                }
+
+            }
+
+            
+
+        }
+            public async static Task<Egg> BoilEgg(Egg egg)
         {
             int boilingTime = 10;
             while (true)
@@ -95,6 +137,20 @@ namespace async_test
                  * Uppdatera tiden ägget kokat
                  * Äggets temperatur ökar med 1 grad per 10 sek
                  */
+
+                // 1 C per 10 sekunder
+                // 3 C per 30 sekunder
+                //
+
+                // 20 C @ 0 S
+                // 23 C @ 30 S
+                // 26 C @ 60 S
+                // Y = k * x + 20
+                // 26 =  k * 60 + 20
+                // k = 0.1
+                // 26 - 20 = k * 60
+
+                // 6 / 60
                 egg.egg_temperature += (0.1M * boilingTime);
                 egg.egg_time += boilingTime;
 
@@ -120,7 +176,7 @@ Console.WriteLine("Some Method End");
 public async static Task Wait(int delay = 1)
 {
 await Task.Delay(TimeSpan.FromSeconds(delay / 10));
-Console.Write($".");
+//Console.Write($".");
 }
 
 public static void PrintEgg (Egg egg)
