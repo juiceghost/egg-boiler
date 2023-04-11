@@ -46,29 +46,28 @@ namespace async_test
 
             var eggTasks = new List<Task> { firstEggTask, secondEggTask, thirdEggTask, statusEggTask };
 
-
-       
             while (eggTasks.Count > 0)
             {
                 Task finishedTask = await Task.WhenAny(eggTasks);
+                // Console.WriteLine("Task done");
                 if (finishedTask == firstEggTask)
                 {
                     Console.WriteLine("first egg is ready");
-                    Egg eggResult = firstEggTask.Result;
-                    PrintEgg(eggResult);
+                    //Egg eggResult = firstEggTask.Result;
+                    PrintEgg(firstEgg);
 
                 }
                 else if (finishedTask == secondEggTask)
                 {
                     Console.WriteLine("second egg is ready");
-                    Egg eggResult = secondEggTask.Result;
-                    PrintEgg(eggResult);
+                    //Egg eggResult = secondEggTask.Result;
+                    PrintEgg(secondEgg);
                 }
                 else if (finishedTask == thirdEggTask)
                 {
                     Console.WriteLine("third egg is ready");
-                    Egg eggResult = thirdEggTask.Result;
-                    PrintEgg(eggResult);
+                    //Egg eggResult = thirdEggTask.Result;
+                    PrintEgg(thirdEgg);
                 }
                 else if (finishedTask == statusEggTask)
                 {
@@ -95,18 +94,42 @@ namespace async_test
         public async static Task EggStatus(List<Egg> eggs)
         {
             // Skriv ut status på alla ägg, dvs temperatur och hur länge de kokat
+            
+
             while (true)
             {
                 
-                //Console.ReadKey(true);
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                Console.Clear();
-                eggs.ForEach(egg =>
+                DateTime start = DateTime.Now;
+
+                bool gotKey = false;
+
+                while ((DateTime.Now - start).TotalSeconds < 2)
                 {
-                    
-                    Console.WriteLine($"{egg.RemainingTime()} seconds remaining");
-                    Console.WriteLine($"{egg.name} has been boiling for {egg.egg_time} and has a temperature of {egg.egg_temperature}");
-                });
+                    if (Console.KeyAvailable)
+                    {
+                        gotKey = true;
+                        break;
+                    }
+                }
+
+                if (gotKey)
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                    eggs.ForEach(egg =>
+                    {
+
+                        Console.WriteLine($"{egg.RemainingTime()} seconds remaining");
+                        Console.WriteLine($"{egg.name} has been boiling for {egg.egg_time} and has a temperature of {egg.egg_temperature}");
+                    });
+                    gotKey = false;
+                }
+                
+
+
+                // Måste delaya här för att övriga tasks ska kunna gå klart.
+                await Task.Delay(10);
+                
                 // När alla egg's remaining time är noll, avsluta simuleringen
 
                 var totalRemaining = eggs.Select(egg => egg.RemainingTime()).Sum();
@@ -151,6 +174,11 @@ namespace async_test
                 // 26 - 20 = k * 60
 
                 // 6 / 60
+
+                //egg.egg_temperature = egg.egg_temperature + (0.1M * boilingTime);
+                //lock (egg)
+                //{ 
+
                 egg.egg_temperature += (0.1M * boilingTime);
                 egg.egg_time += boilingTime;
 
@@ -161,9 +189,11 @@ namespace async_test
 
                 if (egg.egg_temperature >= egg.done_temperature)
                 {
-                        // egg is done!
-                        return egg;
+                    //Console.WriteLine("Egg has reached temp");
+                    // egg is done!
+                    return egg;
                 }
+                //}
             }
         }
 
